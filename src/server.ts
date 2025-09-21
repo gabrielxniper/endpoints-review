@@ -44,7 +44,27 @@ app.get('/users/age-range', (req, res) => {
         }
     }
 });
+// 7
+app.delete('/users/cleanup-inactive', (req, res) => {
+    const { confirm } = req.query;
 
+    if (confirm !== 'true') {
+        res.status(400).send({ message: "Parâmetro 'confirm=true' é obrigatório para executar a limpeza." });
+    } else {
+        const authorIds = new Set(posts.map(post => post.authorId));
+
+        const inactiveUsers = users.filter(user => user.role !== 'admin' && !authorIds.has(user.id));
+        
+        if (inactiveUsers.length > 0) {
+            users = users.filter(user => user.role === 'admin' || authorIds.has(user.id));
+        }
+
+        res.status(200).send({
+            message: "Limpeza de utilizadores inativos concluída.",
+            removedUsers: inactiveUsers
+        });
+    }
+});
 // 1
 app.get('/users/:id', (req, res) => {
     const idToSearch = Number(req.params.id);
@@ -95,28 +115,6 @@ app.put('/users/:id', (req, res) => {
                 res.status(200).send({ message: "Utilizador atualizado com sucesso!", user: updatedUser });
             }
         }
-    }
-});
-
-// 7
-app.delete('/users/cleanup-inactive', (req, res) => {
-    const { confirm } = req.query;
-
-    if (confirm !== 'true') {
-        res.status(400).send({ message: "Parâmetro 'confirm=true' é obrigatório para executar a limpeza." });
-    } else {
-        const authorIds = new Set(posts.map(post => post.authorId));
-
-        const inactiveUsers = users.filter(user => user.role !== 'admin' && !authorIds.has(user.id));
-        
-        if (inactiveUsers.length > 0) {
-            users = users.filter(user => user.role === 'admin' || authorIds.has(user.id));
-        }
-
-        res.status(200).send({
-            message: "Limpeza de utilizadores inativos concluída.",
-            removedUsers: inactiveUsers
-        });
     }
 });
 
